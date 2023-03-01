@@ -8,8 +8,8 @@ pipeline {
   environment {
     gitName = 'std-yong'
     gitEmail = 'std-yong@github.com'
-    gitWebaddress = 'https://github.com/std-yong/sb_code.git'
-    gitSshaddress = 'git@github.com:std-yong/sb_code.git'
+    gitWebaddress = 'https://github.com/std-yong/mario.git'
+    gitSshaddress = 'git@github.com:std-yong/mario.git'
     gitCredential = 'git_cre' // github credential 생성 시의 ID
     dockerHubRegistry = 'stdyong/sbimage'
     dockerHubRegistry2 = 'stdyong/mario'
