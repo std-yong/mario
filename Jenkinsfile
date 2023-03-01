@@ -12,6 +12,7 @@ pipeline {
     gitSshaddress = 'git@github.com:std-yong/sb_code.git'
     gitCredential = 'git_cre' // github credential 생성 시의 ID
     dockerHubRegistry = 'stdyong/sbimage'
+    dockerHubRegistry2 = 'stdyong/mario'
     dockerHubRegistryCredential = 'docker_cre'
   }
 
@@ -49,7 +50,11 @@ pipeline {
         sh "docker build -t ${dockerHubRegistry}:latest ."
         // std-yong/sbimage:4 이런식으로 빌드가 될 것이다.
         // currentBuild.number 젠킨스에서 제공하는 빌드넘버변수
-        }
+
+        sh "docker build -t ${dockerHubRegistry2}:${currentBuild.number} -f marid_deploy ."
+        sh "docker build -t ${dockerHubRegistry2}:latest -f mario_deploy ."
+	}
+
         post {
             failure {
                 echo 'docker image Build failure'
@@ -66,7 +71,10 @@ pipeline {
           // dockerHubRegistryCredential : environment에서 선언한 docker_cre  
             sh "docker push ${dockerHubRegistry}:${currentBuild.number}"
             sh "docker push ${dockerHubRegistry}:latest"
-          }
+            
+	    sh "docker push ${dockerHubRegistry2}:${currentBuild.number}"
+            sh "docker push ${dockerHubRegistry2}:latest"
+	  }
         }
         
         post {
@@ -74,12 +82,18 @@ pipeline {
                 echo 'docker image Push failure'
                 sh "docker image rm -f ${dockerHubRegistry}:${currentBuild.number}"
                 sh "docker image rm -f ${dockerHubRegistry}:latest"
-            }
+            
+		sh "docker image rm -f ${dockerHubRegistry2}:${currentBuild.number}"
+                sh "docker image rm -f ${dockerHubRegistry2}:latest"
+	    }
             success {
                 echo 'docker image Push success'
                 sh "docker image rm -f ${dockerHubRegistry}:${currentBuild.number}"
                 sh "docker image rm -f ${dockerHubRegistry}:latest"
-            }
+           
+		sh "docker image rm -f ${dockerHubRegistry2}:${currentBuild.number}"
+                sh "docker image rm -f ${dockerHubRegistry2}:latest"
+	    }
         }
     }
 
@@ -88,15 +102,17 @@ pipeline {
       steps {
             sh "docker rm -f sb"
             sh "docker run -dp 5656:8085 --name sb ${dockerHubRegistry}:${currentBuild.number}" 
-        }
+        
+	    sh "docker rm -f mario"
+	    sh "docker run -dp 7878:8080 --name mario ${dockerHubRegisrty2}:{currentBuild.number}"
+	}
+
         post {
             failure {
                 echo 'Docker container Deployment failure'
-                slackSend (color: '#FF0000', message: "FAILURE: docker container deployment '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
             success {
                 echo 'docker container Deployment success'
-                slackSend (color: '#0000FF', message: "SUCCESS: docker container deployment '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
         }
     }
@@ -111,8 +127,9 @@ pipeline {
         sh "git config --global user.email ${gitEmail}"
         sh "git config --global user.name ${gitName}"
         sh "sed -i 's@${dockerHubRegistry}:.*@${dockerHubRegistry}:${currentBuild.number}@g' deploy/sb-deploy.yaml"
+    	sh "sed -i 's@${dockerHubRegistry2}:.*@${dockerHubRegistry2}:${currentBuild.number}@g' deploy/mario-deploy.yml"
         sh "git add ."
-        sh "git commit -m 'fix:${dockerHubRegistry} ${currentBuild.number} image versioning'"
+        sh "git commit -m 'fix:${dockerHubRegistry} & {dockerHubRegisrty2}  ${currentBuild.number} image versioning'"
         sh "git branch -M main"
         sh "git remote remove origin"
         sh "git remote add origin ${gitSshaddress}"
