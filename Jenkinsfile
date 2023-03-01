@@ -104,7 +104,7 @@ pipeline {
             sh "docker run -dp 5656:8085 --name sb ${dockerHubRegistry}:${currentBuild.number}" 
         
 	    sh "docker rm -f mario"
-	    sh "docker run -dp 7878:8080 --name mario ${dockerHubRegisrty2}:{currentBuild.number}"
+	    sh "docker run -dp 7878:8080 --name mario ${dockerHubRegistry2}:{currentBuild.number}"
 	}
 
         post {
@@ -112,7 +112,7 @@ pipeline {
                 echo 'Docker container Deployment failure'
             }
             success {
-                echo 'docker container Deployment success'
+                echo 'Docker container Deployment success'
             }
         }
     }
@@ -127,7 +127,7 @@ pipeline {
         sh "git config --global user.email ${gitEmail}"
         sh "git config --global user.name ${gitName}"
         sh "sed -i 's@${dockerHubRegistry}:.*@${dockerHubRegistry}:${currentBuild.number}@g' deploy/sb-deploy.yaml"
-    	sh "sed -i 's@${dockerHubRegistry2}:.*@${dockerHubRegistry2}:${currentBuild.number}@g' deploy/mario-deploy.yml"
+    	sh "sed -i 's@${dockerHubRegistry2}:.*@${dockerHubRegistry2}:${currentBuild.number}@g' deploy/mario-deploy.yaml"
         sh "git add ."
         sh "git commit -m 'fix:${dockerHubRegistry} & {dockerHubRegisrty2}  ${currentBuild.number} image versioning'"
         sh "git branch -M main"
