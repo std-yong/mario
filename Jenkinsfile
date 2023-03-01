@@ -97,25 +97,6 @@ pipeline {
         }
     }
 
-
-    stage('Docker container Deployment') {
-      steps {
-            sh "docker rm -f sb"
-            sh "docker run -dp 5656:8085 --name sb ${dockerHubRegistry}:${currentBuild.number}" 
-        
-	    sh "docker rm -f mario"
-	    sh "docker run -dp 7878:8080 --name mario ${dockerHubRegistry2}:{currentBuild.number}"
-	}
-
-        post {
-            failure {
-                echo 'Docker container Deployment failure'
-            }
-            success {
-                echo 'Docker container Deployment success'
-            }
-        }
-    }
     
     stage('k8s manifest file update') {
       steps {
