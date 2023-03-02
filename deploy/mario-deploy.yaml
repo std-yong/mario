@@ -28,4 +28,4 @@ spec:
     spec:
       containers:
         - name: mario
-          image: stdyong/mario:10
+          image: stdyong/mario:11
